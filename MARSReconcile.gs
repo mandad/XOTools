@@ -6,16 +6,70 @@ const oblogDataStart = 9;   // First data row of OBLOG table
 function onOpen() {
   let ui = SpreadsheetApp.getUi();
   ui.createMenu('OBLOG Tools').
-  addItem('Reconcile MARS', 'reconcileTest').addToUi();
+  addItem('Reconcile MARS', 'gatherInput').addToUi();
 }
 
+function gatherInput() {
+  var ui = SpreadsheetApp.getUi();
+
+  /*
+  * Runs on a different OBLOG sheet
+  * Mostly for initial testing/running script without sheet
+
+  //Get OBLOG Path
+  var result = ui.prompt(
+      'Oblog Google Sheet Path (include /edit):',
+      ui.ButtonSet.OK_CANCEL);
+
+  // Process the user's response.
+  var button = result.getSelectedButton();
+  var oblogPath = result.getResponseText();
+  if (button == ui.Button.CLOSE || button == ui.Button.CANCEL) {
+    return;
+  }
+  */
+  
+  //Get MARS Path
+  result = ui.prompt(
+    'MARS Transactions Google Sheet Path (include /edit):',
+    ui.ButtonSet.OK_CANCEL);
+
+  // Process the user's response.
+  button = result.getSelectedButton();
+  var marsPath = result.getResponseText();
+  if (button == ui.Button.CLOSE || button == ui.Button.CANCEL) {
+    return;
+  }
+
+  //Get Start Date
+  result = ui.prompt(
+    'Start Date in MARS for Reconcile (MM/DD/YYYY):',
+    ui.ButtonSet.OK_CANCEL);
+
+  // Process the user's response.
+  button = result.getSelectedButton();
+  var userDate = result.getResponseText();
+  if (button == ui.Button.CLOSE || button == ui.Button.CANCEL) {
+    return;
+  }
+  //No checking of formats or paths at this point
+  var startDate = new Date(userDate);
+
+  reconcileMARSReport(marsPath, startDate/*, oblogPath*/);
+}
+
+//Test or use this as a backup
 function reconcileTest() {
-  // I don't know why month seems to need to be one less
-  reconcileMARSReport("https://docs.google.com/spreadsheets/d/18zT__L7ycOjX5WCKdYc0rQ4OULc8kQmoEocSVVO4VP0/edit", "https://docs.google.com/spreadsheets/d/1Izpedb1SZ-DunT8sZ8dJqEsNdL2NFuRXEBw9mJ11Xnc/edit", new Date(2022, 2, 10));
+  // Month is zero indexed
+  reconcileMARSReport("https://docs.google.com/spreadsheets/d/1Izpedb1SZ-DunT8sZ8dJqEsNdL2NFuRXEBw9mJ11Xnc/edit", new Date(2022, 0, 1), "https://docs.google.com/spreadsheets/d/1mUyWZDMFOqjvaZz3XonzEHgZ03l_qANQP3wBHZo5824/edit");
 }
 
-function reconcileMARSReport(oblogPath, marsPath, startDate) {
-  var oblogSheet = SpreadsheetApp.openByUrl(oblogPath);
+function reconcileMARSReport(marsPath, startDate, oblogPath = null) {
+  var oblogSheet = SpreadsheetApp.getActiveSpreadsheet()
+  if (oblogPath != null) {
+    oblogSheet = SpreadsheetApp.openByUrl(oblogPath);
+  } 
+  
   var marsSheet = SpreadsheetApp.openByUrl(marsPath);
 
 
