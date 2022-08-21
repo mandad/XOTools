@@ -119,13 +119,16 @@ function reconcileMARSReport(marsPath, startDate, oblogPath = null) {
           }
           //find other PCARD for same transaction (probably should just sort after the fact)
           for (let matchRow = 0; matchRow < marsData.length; matchRow++) {
-            if (marsData[matchRow][3] == marsData[i][3]) {
+            if (marsData[matchRow][3] == marsData[i][3] && marsData[matchRow][0] == marsData[i][0]) {
               marsTrans.getRange(matchRow + marsDataRangeOffset,14).setValue(markerString);
             }
           }
         }
       }
     }
+    //Filter the dates for the ones checked
+    let dateCriteria = SpreadsheetApp.newFilterCriteria().whenDateAfter(startDate).build();
+    marsFilter.setColumnFilterCriteria(9, dateCriteria);
   } 
   else {
     Logger.log("Transaction Report not found in MARS sheet");
@@ -158,7 +161,7 @@ function findCorrespondingOBLOG(oblogSheet, cost, occ, projectCode, type, lastNa
         startRow = matchRow + 1;
         continue;
       }
-      if (type != matchDetails[0]) {
+      if (type != String(matchDetails[0]).toUpperCase()) {
         matchString += "[Type]";
       }
       if (lastName != String(matchDetails[1]).toUpperCase()){
