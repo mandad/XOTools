@@ -5,6 +5,7 @@ const monthString = {1: "JAN",
                     10: "OCT",
                     11: "NOV",
                     12: "DEC"};
+const timeZoneShift = 10; //hours
 var nameRes = "";
 var nameCal = "";
 
@@ -31,17 +32,23 @@ function markHotelDates() {
     name = reservationSheet.getRange(row, 1).getValue();
     //skip blank rows
     if (name != "" && name != "END") {
-      //Get all the supporting date from the reservation sheet
-      let startDate = reservationSheet.getRange(row, 2).getValue();
-      let endDate = reservationSheet.getRange(row, 3).getValue();
+      //Get all the supporting dates from the reservation sheet
+      //Need to shift into UTC time zone
+      let startDate = new Date(reservationSheet.getRange(row, 2).getValue().getTime() + timeZoneShift * 60 * 60 * 1000);
+      let endDate = new Date(reservationSheet.getRange(row, 3).getValue().getTime() + timeZoneShift * 60 * 60 * 1000);
       let startSheetString = monthString[startDate.getMonth()+1];
       let monthSheetStart = trackerSheet.getSheetByName(monthString[startDate.getMonth()+1]);
       let monthSheetEnd = trackerSheet.getSheetByName(monthString[endDate.getMonth()+1]);
       
       //find row in personnel tracker on that month
       let calName = nameAssoc(trackerSheet, name);
-      markBorder(monthSheetStart, startDate, calName, true);
-      markBorder(monthSheetEnd, endDate, calName, false);
+      if (calName != "") {
+        markBorder(monthSheetStart, startDate, calName, true);
+        markBorder(monthSheetEnd, endDate, calName, false);
+      }
+      else {
+        Logger.log("Name not found: " + name);
+      }
     }
     row = row + 1;
   }
@@ -49,11 +56,11 @@ function markHotelDates() {
 }
 
 function markBorder(monthSheet, markDate, calName, begin = true) {
-  for (let nameRow = 4; nameRow < monthSheet.getLastRow(); nameRow++) {
+  for (let nameRow = 4; nameRow < monthSheet.getLastRow()+1; nameRow++) {
     let testName = monthSheet.getRange(nameRow, 2).getValue();
     if (testName == calName) {
-      //Zero indexed month, time zone causes day before UTC (so + 3)
-      let markRange = monthSheet.getRange(nameRow, markDate.getDate() + 3);
+      //Zero indexed within month, day 1 is column 3 ("C")
+      let markRange = monthSheet.getRange(nameRow, markDate.getDate() + 2);
       if (begin) {
         markRange.setBorder(null, true, null, null, null, null, '#38761d', SpreadsheetApp.BorderStyle.SOLID_MEDIUM);
       } else {
@@ -63,7 +70,6 @@ function markBorder(monthSheet, markDate, calName, begin = true) {
       return;
     }
   }
-  row = row + 1;
 }
 
 function nameAssoc(trackerSheet, thisResName) {
@@ -82,6 +88,8 @@ function nameAssoc(trackerSheet, thisResName) {
     //If it was found in a previous loop
     return nameCal;
   }
+  //If not matching name was found
+  return "";
 }
 
 function clearSheets(trackerSheet) {
@@ -94,24 +102,4 @@ function clearSheets(trackerSheet) {
 
 function monthSheet(date) {
   return Utilities.formatDate(date, timeZone, 'mmm').toUpperCase();
-}
-
-
-function duplicateCondFormat() {
-  var copyFromSheet = SpreadsheetApp.getActiveSheet();
-  var copyToSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName("Template");
-  var rules = copyFromSheet.getConditionalFormatRules();
-  //Logger.log(rules[0].getRanges())
-  /*
-  var rule = rules[0];
-  var ranges = rule.getRanges();
-  for (var i = 0; i < ranges.length; i++) {
-    Logger.log(ranges[i].getA1Notation());
-  }
-  */
-  var newRules = new Array()
-  for (var i = 0; i < rules.length; i++) {
-    newRules.push(rules[i].copy());
-  }
-  copyToSheet.setConditionalFormatRules(newRules);
 }
