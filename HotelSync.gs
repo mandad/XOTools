@@ -2,6 +2,8 @@ const monthString = {1: "JAN",
                     2: "FEB",
                     3: "MAR",
                     4: "APR",
+                    5: "MAY",
+                    6: "JUN",
                     10: "OCT",
                     11: "NOV",
                     12: "DEC"};
@@ -95,7 +97,7 @@ function nameAssoc(trackerSheet, thisResName) {
 function clearSheets(trackerSheet) {
   for (var sheetName in monthString) {
     let clearSheet = trackerSheet.getSheetByName(monthString[sheetName]);
-    let clearRange = clearSheet.getRange(4,3,clearSheet.getLastRow()-4,clearSheet.getLastColumn()-3);
+    let clearRange = clearSheet.getRange(4,3,clearSheet.getLastRow()-3,clearSheet.getLastColumn()-2);
     clearRange.setBorder(null, false, null, false, false, null);
   }
 }
