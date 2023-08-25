@@ -2,11 +2,12 @@
 function copyValuestoRP() {
   // Prompt the user for the source and destination spreadsheet IDs
   const ui = SpreadsheetApp.getUi();
-  const sourceSpreadsheetId = ui.prompt("Enter the ID of the source spreadsheet:").getResponseText();
+  //const sourceSpreadsheetId = ui.prompt("Enter the ID of the source spreadsheet:").getResponseText();
   const destinationSpreadsheetId = ui.prompt("Enter the ID of the destination spreadsheet:").getResponseText();
   
   // Get the source and destination spreadsheets
-  const sourceSpreadsheet = SpreadsheetApp.openById(sourceSpreadsheetId);
+  //const sourceSpreadsheet = SpreadsheetApp.openById(sourceSpreadsheetId);
+  const sourceSpreadsheet = SpreadsheetApp.getActiveSpreadsheet()
   const destinationSpreadsheet = SpreadsheetApp.openById(destinationSpreadsheetId);
   
   // Define the ranges to copy
