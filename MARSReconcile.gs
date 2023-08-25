@@ -164,7 +164,8 @@ function findCorrespondingOBLOG(oblogSheet, cost, occ, projectCode, type, lastNa
       if (type != String(matchDetails[0]).toUpperCase()) {
         matchString += "[Type]";
       }
-      if (lastName != String(matchDetails[1]).toUpperCase()){
+      //determine if email is used for name (SmartSheet version)
+      if (lastName != extractLastName(matchDetails[1]).toUpperCase()){
         matchString += "[Name]";
       }
       if (!String(matchDetails[2]).startsWith(projectCode)) {
@@ -226,4 +227,21 @@ function rowOfCost(oblogSheet, cost, startRow = oblogDataStart){
     }
   }
   return -1;
+}
+
+//Extracts either the last name (old style) or last from email (SmartSheet)
+function extractLastName(nameStr) {
+  // Regular expression pattern to match email addresses and extract the desired substring
+  // The desired substring is captured in a capturing group (using parentheses)
+  const emailPattern = /(?:[^.@]+\.)?([^.@]+)@/;
+  
+  let match = nameStr.match(emailPattern);
+  
+  // If there's a match and the first capturing group is not undefined
+  if (match && match[1]) {
+    return match[1];
+  } else {
+    //Old style with just last name
+    return nameStr;
+  }
 }
