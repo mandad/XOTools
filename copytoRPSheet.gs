@@ -27,11 +27,54 @@ function copyValuestoRP() {
       // Loop through the ranges to copy
       for (let j = 0; j < rangesToCopy.length; j++) {
         const sourceRange = sourceSheet.getRange(rangesToCopy[j].sourceRange);
-        const sourceValues = sourceRange.getValues();
+        //const sourceValues = sourceRange.getValues();
         
         let destinationRange = destinationSheet.getRange(rangesToCopy[j].destinationRange);
-        destinationRange.setValues(sourceValues);
+        //destinationRange.setValues(sourceValues);
+        
+        //Note this will skip the shore leave credit days already entered but this is probably ok for now
+        copyIfBlank(sourceRange, destinationRange, sourceSheetName);
       }
     }
+  }
+}
+
+function copyIfBlank(srcRange, destRange, copySheetName) {
+  // Validate the input ranges
+  if (!srcRange || !destRange) {
+    throw new Error("Both source and destination ranges are required.");
+  }
+  
+  if (srcRange.getNumRows() !== destRange.getNumRows() || srcRange.getNumColumns() !== destRange.getNumColumns()) {
+    throw new Error("Source and destination ranges must be of the same size.");
+  }
+  
+  // Get the values from both ranges
+  var srcValues = srcRange.getValues();
+  var destValues = destRange.getValues();
+  
+  // Store conflicts
+  var conflicts = [];
+  
+  // Iterate over the values and copy from source to destination if destination cell is blank or zero
+  for (var i = 0; i < srcValues.length; i++) {
+    for (var j = 0; j < srcValues[i].length; j++) {
+      if (!destValues[i][j] || destValues[i][j] === " ") {
+        destValues[i][j] = srcValues[i][j];
+      } else if (destValues[i][j] !== srcValues[i][j]) {
+        // Capture conflicts
+        var cell = destRange.offset(i, j).getCell(1, 1).getA1Notation();
+        conflicts.push("Cell " + cell + ": Source (" + srcValues[i][j] + ") vs. Destination (" + destValues[i][j] + ")");
+      }
+    }
+  }
+  
+  // Set the values back to the destination range
+  destRange.setValues(destValues);
+  
+  // If there are conflicts, show them to the user
+  if (conflicts.length > 0) {
+    var message = "Conflicts found for " + copySheetName +":\n\n" + conflicts.join("\n");
+    SpreadsheetApp.getUi().alert(message);
   }
 }
