@@ -3,7 +3,7 @@ function onOpen() {
   
   // Create custom menu in Google Sheet
   ui.createMenu('Augmenter Tools')
-      .addItem('Clear Sheet', 'clearSheet')
+      .addItem('Clear Sheet', 'ClearSheet')
       .addItem('Copy Values to RP Sheet', 'copyValuesToRP')
       .addToUi();
 }
